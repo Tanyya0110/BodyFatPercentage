@@ -1,0 +1,43 @@
+---
+title: "Confidence Interval"
+author: "Tanyya Varshney"
+output: html_document
+---
+
+##Problem Statement
+Estimate the 99% confidence interval for the mean body fat percentage in the population.
+
+### Loading packages and data set
+```{r message=FALSE, warning=FALSE}
+#loading packages
+library(car)
+library(mosaic)
+library(Hmisc)
+
+#loading data set 
+Body_data <- read.csv("Body.csv",header = TRUE,sep = ",")
+
+#Cleaning the data
+Body_data$Sex <- factor(Body_data$Sex, levels = c(0,1),labels = c("Female","Male"))
+```
+
+###Assumptions
+1. Unknown Population standard deviation
+In real world scenario, we don't know the population standard deviation. Here also, we know the sample standard deviation but the entire population paramters are unknown to us. 
+Thus, we need estimate the population standard deviation from the sample standard deviation.
+For this purpose we use the <b> t distribution </b> for calculating the confidence interval.
+
+2. Normality of the data
+As seen from task 1, our sample size is 252 (large sample as it is >30)and by Central limit Theorm we can say that the data is <b>Normally disributed</b>.
+Also, the normality of the data can be checked using the Q-Q plot.
+
+```{r}
+qqPlot(Body_data$BFP_Brozek, dist="norm")
+
+```
+As seen from the Q-Q plot 95% of the data lies between the dotted lines, thus we can assume that our data is normally distributed.
+```{r}
+#Confidence interval using t-test
+confint(t.test( ~ BFP_Brozek, data = Body_data,conf.level = 0.99))
+```
+The 99% Confidence Interval for body fat percentage is [17.67 20.21]

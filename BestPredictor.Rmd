@@ -1,0 +1,113 @@
+---
+title: "BestPredictor"
+author: "Tanyya Varshney"
+output: html_document
+---
+##Problem Statement
+Find the best predictor variable for the body fat percentage data set
+
+### Loading packages and data set
+```{r message=FALSE, warning=FALSE}
+#loading packages
+library(car)
+library(mosaic)
+library(Hmisc)
+
+#loading data set 
+Body_data <- read.csv("Body.csv",header = TRUE,sep = ",")
+
+#Cleaning the data
+Body_data$Sex <- factor(Body_data$Sex, levels = c(0,1),labels = c("Female","Male"))
+```
+##Finding Best Predictor
+
+The  predictor variables we need to compare are : Neck,Chest,Abdomen,hip,thigh,knee,ankle,forearm and wrist.
+The dependent variable is BFP_Brozek which gives the body fat percentage.
+
+Using the correlation analysis between the predictor variables and dependent variable, we find the best predictor variable, it is the one which gives the maximum r value. 
+The variable with highest r value indicates that the correlation among the two variables is highest and is suitable for choosing as the best predictor.
+```{r}
+bivariate<-as.matrix(select(Body_data,BFP_Brozek,Neck,Chest,Abdomen,Hip,Thigh,Knee,Ankle,Biceps,Forearm,Wrist))
+PCoeff <- cor(bivariate)
+round(PCoeff,3)
+```
+As observed from the above output, we find that <b>Abdomen</b> has the highest R value and can be selected as the best predictor. 
+
+##Visualisation of Relationship between Abdomen and Body Fat Percentage
+Prior to fitting the regression model, it is necessary to identify whether the relationship between the variables is linear or not. 
+To Visualise the output we can use xyplot function
+```{r}
+xyplot(Body_data$BFP_Brozek~Body_data$Abdomen)
+```
+
+##Fittinig Linear Regression Model
+From the above plot, it is clear that the relationship between abdomen circumference and body fat percentage is linear, we fit the linear regression model. 
+```{r}
+abdomen_model<- lm(BFP_Brozek ~ Abdomen, data= Body_data)
+msummary(abdomen_model)
+confint(abdomen_model)
+```
+
+We can observe that Abdomen and BFP_Brozek have the highest correlation value of 0.814 and the data exhibits a <b> positive linear relationship </b>.
+
+##Assumption for linear regression
+
+<b>1. Independence</b>
+
+As each and every person has different body measurements, the measurements of one person are completely different from the other person and there is no relation among any observation.
+Hence, we can say that the assumption if independence is met.
+
+<b>2. Linearity</b>
+
+From the xyplot observed above, it is clear that the data has a positive linear trend. As the data is linear,this satisfies the assumption of linearity of the data. 
+
+<b>3. Normality of residuals</b>
+
+The residuals show how far an observed score (for an observation) deviates from the value predicted by the line of best fit.
+To check the normality of the residuals, we can make a Q-Q plot. 
+```{r}
+qqPlot(abdomen_model$residuals, dist="norm")
+```
+The above plot suggests that the residuals are located around the blue line. It would be safe to assume the residuals are approximately normally distributed. 
+
+<b>4. Homoscedasticity</b>
+
+We check this assumption by looking at a scatter plot of the predicted values on the x axis and the residuals on the y. 
+```{r}
+mplot(abdomen_model,1)
+```
+
+The variance of the residuals appear to remain constant across the line. There are some outliers observed but they are very few. Overall, we can say that the data is Homoscedastic.
+
+##Testing statistical significance of Intercept 
+
+H<sub>0</sub>: $\alpha=0$
+
+H<sub>A</sub>: $\alpha \neq 0$ 
+```{r}
+coef(summary(abdomen_model))
+```
+For the intercept, the p value is p<0.001, therefore we reject the Null Hypothesis.This means that the intercept is statistical significant at $\alpha=0.05$
+
+##Testing statistical significance of Slope
+
+H<sub>0</sub>: $\beta=0$
+
+H<sub>A</sub>: $\beta \neq 0$ 
+
+From the above funtion, it can be seen that for slope as well, p <0.001 (p<0.05), therefore we reject the Null Hypothesis. There is a statistically significant evidence that Abdomen circumference is positively related to body fat percentage. 
+
+##Summarise the Linear Relationship
+
+
+```{r}
+xyplot(BFP_Brozek ~ Abdomen, data = Body_data, ylab ="Body Fat Percentage",xlab="Abdomen Circumference",
+panel=panel.lmbands)
+```
+
+The linear regression equation is given as: $Y= \alpha + \beta X$
+where Y is BFP_Brozek(dependent variable), X is abdomen(predictor variable), $\alpha= -35.197$ and $\beta = 0.584$
+
+##Conclusion
+
+A linear regression model was fitted to predict the dependent variable,body fat percentage, using abdomen circumference measurement as the best predictor. Prior to fitting the regression, a scatterplot assessing the bivariate relationship between Abdomen and BFP_Brozek was inspected. The scatterplot demonstrated evidence of a positive linear relationship.Other non-linear trends were ruled out. The overall regression model was statistically significant, F(1,250)=489.9 , p <.001, and explained 66.2% of the variability in BFP_BRozek, R2 = .662. The estimated regression equation was BFP_Brozek = -35.197+ .584*Abdomen. The positive slope for Abdomen circumference was statistically significant, b = 0.584, t(250) = 22.134, p < .001, 95% CI [0.532, 0.637]. Final inspection of the residuals supported normality and homoscedasticity.

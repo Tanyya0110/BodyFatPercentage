@@ -1,0 +1,87 @@
+---
+title: "MalesVsFemales"
+author: "Tanyya Varshney"
+output: html_document
+---
+##Problem Statement
+Examine whether the mean body fat percentage in males is same as the mean body fat percentage in females or not.
+
+##Hypothesis
+Here, we have used a data sample of 252 men and women provided by the Body data set. The null hypothesis and alternate hypothesis for the aforementioned problem is stated below: 
+
+H<sub>0</sub>: $\mu(males)-\mu(females) = 0$ 
+
+H<sub>A</sub>: $\mu(males)-\mu(females) \neq 0$ 
+
+### Loading packages and data set
+```{r message=FALSE, warning=FALSE}
+#loading packages
+library(car)
+library(mosaic)
+library(Hmisc)
+
+#loading data set 
+Body_data <- read.csv("Body.csv",header = TRUE,sep = ",")
+
+#Cleaning the data
+Body_data$Sex <- factor(Body_data$Sex, levels = c(0,1),labels = c("Female","Male"))
+```
+###Testing Assumptions for Two sample t-test
+
+We are comparing the difference between two population means, that is males and females, thus we need to perform the <b>Two Sample t-test </b> on Body data set.
+
+Assumptions for Two sample t-test are
+
+<b>1. Population being compared are independent of each other</b>
+
+The data being compared here is of Males and Females. Clearly, they both are independent of each other and there is no chances of an overlap between the two. Thus this criteria for the test is met.
+
+<b>2. For small samples, data for both populations should be normally distributed</b>
+         
+By using Central Limit Theorem which states that sampling distribution of a mean will be
+approximately normally distributed, regardless of the underlying population distribution when the sample size is large (i.e. n > 30). 
+
+```{r}
+favstats(~BFP_Brozek| Sex, data=Body_data)
+```
+From the above statistics, it is clear that our sample size is greater than 30, thus by Central Limit Theorem we can say that the data used here is Normally Distributed. 
+
+<b>3. Both populations have equal variances</b>
+  
+We perform the <b>Levene Test</b> to check the homogeneity of the variances of both the males and females.
+The statistical hypothesis used in Levene Test are as follows: 
+  
+H<sub>0</sub>: $\sigma1^{2}=\sigma2^{2}$
+
+H<sub>A</sub>: $\sigma1^{2} \neq \sigma2^{2}$ 
+
+```{r}
+#Levene test for checking the homogeneity of variances
+leveneTest(BFP_Brozek~Sex,data = Body_data)
+```
+The p-value for the Levene's test of equal variance for body fat percentage between males and females was p=0.1395 that means p > 0.05. Therefore, we fail to reject Null Hypothesis that is, it is safe to assume equal variances.
+
+####Perform Two sample t-test
+
+We have met all the assumptios required for the Two sample t-test. Thus it is safe to perform the test on our data set. 
+```{r}
+t.test(BFP_Brozek~Sex,data = Body_data,var.equal=TRUE,alternative="two.sided")
+```
+
+The difference between males and females estimated by the sample was 18.660-19.423= -0.763.
+
+
+Assuming $\alpha = 0.05$ and a two-tailed test, we calculate t* as:
+```{r}
+qt(0.025,df = 92 + 160 - 2)
+```
+The two tailed t* value is $\pm 1.97$
+
+According to Critical value method, as test statistic t value = 0.751 which lies within -1.97 to +1.97, we fail to reject the Null Hypothesis. Therefore, we can say that there is no statistically significant difference between the two means.
+
+According the p-vaule method, as p= 0.453 > $\alpha =0.05$, we fail to reject the Null Hypothesis which means that there is no statistically significant difference between the two means.
+
+The 95% Confidence Interval is [-1.24 2.76]. As this interval captures H<sub>0</sub> value, we fail to reject the Null Hypothesis.
+
+##Conclusion
+The two sample t-test was performed to examine whether there is a significant difference between the mean body fat percentage of males and females or not. From the Central Limit Theorem it was ensured that the data in both the groups was normally distributed. The Levene's test was conducted for checking the homogeneity of variances and it was indicated that the it is okay to assume equal Variances. The results of the two sample t-test found that there is no statistically significant difference between the mean body fat percentage of males and females, t(df = 250) = 0.751, p = .453, 95% CI for the difference in means [-1.24 2.76]. The results of the investigation suggest that mean body fat percentage of males and females is the same.
